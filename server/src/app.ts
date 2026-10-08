@@ -28,6 +28,7 @@ import { authRouter } from './routes/auth.js';
 import { docsRouter } from './routes/docs.js';
 import { mcpRouter } from './routes/mcp.js';
 import { statusRouter, providersRouter } from './routes/status.js';
+import { routeStateRouter } from './routes/route-state.js';
 import { geminiRouter } from './routes/gemini.js';
 import { ollamaRouter } from './routes/ollama.js';
 import { urlTokenRouter } from './routes/url-tokens.js';
@@ -286,6 +287,10 @@ export function createApp(config?: Config) {
   // limiter (like docsRouter) so status polling doesn't draw down a caller's
   // request budget.
   app.use('/v1', providersRouter);
+
+  // Read-only per-route availability (GET /v1/routes): the router's own gates as JSON. Same
+  // unified-key auth as /v1/providers, mounted before the rate limiter for the same reason.
+  app.use('/v1', routeStateRouter);
 
   // Separately revocable URL tokens for clients that cannot set headers.
   app.use('/v1/t/:token', createProxyRateLimiter(cfg.proxyRateLimitRpm));
